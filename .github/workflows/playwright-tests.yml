@@ -1,0 +1,124 @@
+# Playwright Tests - Dual Authentication Strategy
+#
+# Two parallel jobs handle Google authentication challenges:
+# 1. test-storagestate (GitHub-hosted): Pre-authenticated via storageState, bypasses Google login
+# 2. test-ui (Self-hosted): Performs full Google OAuth login via UI
+#
+# Why? Google blocks automated logins from datacenter IPs (CAPTCHA). Self-hosted runners
+# use trusted IPs. StorageState bypasses login entirely and works everywhere.
+
+name: Playwright Tests - Dual Authentication Strategy
+permissions:
+  contents: read
+  pull-requests: write
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  # Job 1: StorageState Tests (GitHub-hosted ubuntu-latest)
+  # Uses pre-saved auth state (no UI login). Works on any runner type.
+  test-storagestate:
+    name: StorageState Tests (GitHub-hosted)
+    timeout-minutes: 30
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Install Playwright Browsers
+      run: npx playwright install --with-deps
+
+    # Decode authentication state from GitHub Secret (base64 → JSON file)
+    # Contains Google session cookies. To update: npm run Generate:auth → base64 encode → update secret
+    - name: Decode auth state from GitHub Secret
+      run: |
+        mkdir -p playwright/.auth
+        echo "${{ secrets.YOUTUBE_AUTH_STATE }}" | base64 -d > playwright/.auth/user.json
+        echo "✓ Auth state file created from GitHub Secret"
+      continue-on-error: true
+
+    # Run pre-authenticated tests with xvfb (virtual display for headed mode in CI)
+    - name: Run StorageState Tests
+      env:
+        ENV: LIVE
+        ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }}
+      run: |
+        echo "Running StorageState tests (pre-authenticated, no UI login)..."
+        xvfb-run --auto-servernum --server-args="-screen 0 1280x960x24" npx playwright test tests/UI/002_youtube_e2e_storagestate.spec.ts --project=chrome --headed
+
+    - name: Upload test results on failure
+      uses: actions/upload-artifact@v4
+      if: failure()
+      with:
+        name: storagestate-playwright-report
+        path: playwright-report/
+        retention-days: 30
+
+    - name: Upload test artifacts on failure
+      uses: actions/upload-artifact@v4
+      if: failure()
+      with:
+        name: storagestate-test-results
+        path: test-results/
+        retention-days: 30
+
+  # Job 2: UI Tests with Google Login (Self-hosted runner)
+  # Performs full OAuth login via UI. Requires self-hosted runner because
+  # GitHub-hosted runners use datacenter IPs that Google blocks (CAPTCHA).
+  test-ui:
+    name: UI Tests with Google Login (Self-hosted)
+    timeout-minutes: 60
+    runs-on: self-hosted
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Install Playwright Browsers
+      run: npx playwright install --with-deps
+
+    # Run tests with full Google login (includes Step 1: Sign-In)
+    - name: Run UI Tests with Google Login
+      env:
+        ENV: LIVE
+        ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }}
+      run: |
+        echo "Running UI tests with Google login (includes UI authentication in Step 1)..."
+        npx playwright test tests/UI/001_youtube_e2e_UI.spec.ts --project=chrome --headed
+
+    - name: Upload test results on failure
+      uses: actions/upload-artifact@v4
+      if: failure()
+      with:
+        name: ui-playwright-report
+        path: playwright-report/
+        retention-days: 30
+
+    - name: Upload test artifacts on failure
+      uses: actions/upload-artifact@v4
+      if: failure()
+      with:
+        name: ui-test-results
+        path: test-results/
+        retention-days: 30

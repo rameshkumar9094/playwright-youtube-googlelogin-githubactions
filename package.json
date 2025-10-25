@@ -1,0 +1,24 @@
+{
+  "name": "playwright_ts_automation",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test:report": "npx playwright show-report",
+    "test:e2e:headless": "set ENV=LIVE&& npx playwright test --grep @youtube --project=chrome",
+    "test:e2e:headed": "set ENV=LIVE&& npx playwright test --grep @youtube --project=chrome --headed",
+    "Generate:auth": "set ENV=LIVE&& npx playwright test --project=setup --headed",
+    "Ui:headed": "set ENV=LIVE&& npx playwright test tests/UI/001_youtube_e2e_UI.spec.ts --project=chrome --headed",
+    "storage:headed": "set ENV=LIVE&& npx playwright test tests/UI/002_youtube_e2e_storagestate.spec.ts --project=chrome --headed"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "@playwright/test": "^1.56",
+    "@types/node": "^24.2.0"
+  },
+  "dependencies": {
+    "dotenv": "^17.2.3"
+  }
+}

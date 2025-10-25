@@ -1,0 +1,23 @@
+{
+    "QA": {
+      "baseURL": "",
+      "credentials": {
+        "username": "",
+        "password": ""
+      }
+    },
+    "UAT": {
+      "baseURL": "",
+      "credentials": {
+        "username": "",
+        "password": ""
+      }
+    },
+    "LIVE": {
+      "baseURL": "https://www.youtube.com/",
+      "credentials": {
+        "username": "automationtester1990@gmail.com",
+        "password": "encrypted:4uyJWZtkxYH8i8E9KksZsFP7R4mHBGxIlBOxvgYPs+dFiuzNVKQflM3k5pCWtjVIB5z6kqhTZLpFqt/kLcQVzZ5VngPkO15RxL5UPQMfJhNkTfmnGPHVzLq9IbOnst3DgFoJJvtwkjliPpuYJVfyJ69LMlDyGA=="
+      }
+    }
+  }

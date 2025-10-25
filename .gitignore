@@ -1,0 +1,19 @@
+
+# Playwright
+node_modules/
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+/screenshots/
+
+# Authentication state files (contain sensitive cookies/tokens)
+playwright/.auth/
+tests/playwright/.auth/
+# Environment variables and secrets
+.env
+.env.local
+.env.*.local
+ENCRYPTION_KEY
+*.key
+
