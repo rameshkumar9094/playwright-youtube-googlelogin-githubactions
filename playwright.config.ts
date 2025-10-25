@@ -5,6 +5,7 @@ const fs = require('fs');
 const path = require('path');
 const {readJsonFile } = require('./src/utils/jsonhelper.ts');
 
+//Test changes
 
 const ENV = process.env.ENV || 'LIVE';
 const envConfig = readJsonFile(path.join(__dirname, 'config.json'))[ENV];
