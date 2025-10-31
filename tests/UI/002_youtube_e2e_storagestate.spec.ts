@@ -80,7 +80,7 @@ test.describe('YouTube E2E Test Suite (StorageState Auth)', {
       console.log('✓ Video page loaded');
       
       await page.waitForTimeout(3000);
-      
+      await youtubePage.skipAds();
       const isPlaying = await videoHelper.isVideoPlaying(youtubePage.videoPlayer);
       expect(isPlaying).toBe(true);
       console.log('✓ Verified video is playing');
